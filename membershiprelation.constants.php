@@ -24,4 +24,10 @@ define('CHILD4DOBM', 'custom_24');
 define('CHILD4EMM', 'custom_30');
 
 // Price Sets
-define('CHILDPRICEM', 'price_4');
+define('CHILDPRICEM', 'price_11');
+
+// Price Fields
+define('ONEGIRL', 24);
+define('TWOGIRLS', 25);
+define('THREEGIRLS', 26);
+define('FOURGIRLS', 27);

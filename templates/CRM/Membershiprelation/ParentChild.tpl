@@ -3,6 +3,11 @@
     CRM.$(function($) {
         var childprice = '{/literal}{$smarty.const.CHILDPRICEM}{literal}';
 
+        var onegirl = '{/literal}{$smarty.const.ONEGIRL}{literal}';
+        var twogirls = '{/literal}{$smarty.const.TWOGIRLS}{literal}';
+        var threegirls = '{/literal}{$smarty.const.THREEGIRLS}{literal}';
+        var fourgirls = '{/literal}{$smarty.const.FOURGIRLS}{literal}';
+
         var child2fn = '{/literal}{$smarty.const.CHILD2FNM}{literal}';
         var child2ln = '{/literal}{$smarty.const.CHILD2LNM}{literal}';
         var child2dob = '{/literal}{$smarty.const.CHILD2DOBM}{literal}';
@@ -26,19 +31,19 @@
         var selectedchildren = $('input[name='+childprice+']:checked').val();
 
         if (selectedchildren) {
-            if (selectedchildren == 10) {
+            if (selectedchildren == onegirl) {
                 $('.child-2').hide();
                 $('.child-3').hide();
                 $('.child-4').hide();
             }
-            if (selectedchildren == 11) {
+            if (selectedchildren == twogirls) {
                 $('.child-2').show();
             }
-            if (selectedchildren == 12) {
+            if (selectedchildren == threegirls) {
                 $('.child-2').show();
                 $('.child-3').show();
             }
-            if (selectedchildren == 13) {
+            if (selectedchildren == fourgirls) {
                 $('.child-2').show();
                 $('.child-3').show();
                 $('.child-4').show();
@@ -48,7 +53,7 @@
         $('input[name='+childprice+']').change(function() {
             var noofchildren = $(this).val();
 
-            if (noofchildren == 10) {
+            if (noofchildren == onegirl) {
                 $('#'+child2fn).val('');
                 $('#'+child2ln).val('');
                 $('#'+child2dob).val('');
@@ -71,7 +76,7 @@
                 $('.child-3').hide();
                 $('.child-4').hide();
             }
-            if (noofchildren == 11) {
+            if (noofchildren == twogirls) {
                 $('#'+child3fn).val('');
                 $('#'+child3ln).val('');
                 $('#'+child3dob).val('');
@@ -88,7 +93,7 @@
                 $('.child-3').hide();
                 $('.child-4').hide();
             }
-            if (noofchildren == 12) {
+            if (noofchildren == threegirls) {
                 $('#'+child3fn).val('');
                 $('#'+child3ln).val('');
                 $('#'+child3dob).val('');
@@ -100,7 +105,7 @@
                 $('.child-3').show();
                 $('.child-4').hide();
             }
-            if (noofchildren == 12) {
+            if (noofchildren == fourgirls) {
                 $('.child-2').show();
                 $('.child-3').show();
                 $('.child-4').show();
