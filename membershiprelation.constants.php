@@ -5,8 +5,8 @@ define('PARENT1FNM', 'custom_11');
 define('PARENT2FNM', 'custom_13');
 define('PARENT1LNM', 'custom_12');
 define('PARENT2LNM', 'custom_14');
-define('PARENT1EMAIL', 'custom_28');
-define('PARENT2EMAIL', 'custom_29');
+define('PARENT1EMAILM', 'custom_28');
+define('PARENT2EMAILM', 'custom_29');
 
 define('CHILD2FNM', 'custom_15');
 define('CHILD2LNM', 'custom_16');
