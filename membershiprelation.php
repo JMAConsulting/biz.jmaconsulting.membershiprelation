@@ -281,10 +281,10 @@
       // Parent of Relationship with 1st guardian
       if (!empty($contact['parent1'])) {
         $parent1 = $contact['parent1'][0];
-        createRelationship($child1, $parent1, $childRel);
+        createRelationshipMember($child1, $parent1, $childRel);
         foreach ($contact as $person => $con) {
           if (in_array($person, ['child2', 'child3', 'child4']) && !empty($con[$person])) {
-            createRelationship($contact[$person][0], $parent1, $childRel);
+            createRelationshipMember($contact[$person][0], $parent1, $childRel);
           }
         }
       }
@@ -292,7 +292,7 @@
       // Parent of Relationship with 2nd guardian
       /*if (!empty($contact['parent2'])) {
         $parent2 = $contact['parent2'][0];
-        createRelationship($child1, $parent2, $childRel);
+        createRelationshipMember($child1, $parent2, $childRel);
         foreach ($contact as $person => $con) {
           if (in_array($person, ['child2', 'child3', 'child4']) && !empty($con[$person])) {
             createRelationshipMember($contact[$person][0], $parent2, $childRel);
