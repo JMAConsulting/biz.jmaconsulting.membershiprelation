@@ -158,6 +158,12 @@
     }
   }
 
+  /**
+   * Implements hook_civicrm_validateForm().
+   *
+   * @param string $formName
+   * @param CRM_Core_Form $form
+   */
   function membershiprelation_civicrm_validateForm($formName, &$fields, &$files, &$form, &$errors) {
     if ($formName == "CRM_Contribute_Form_Contribution_Main" && $form->getVar('_id') == 1) {
       switch ($fields[CHILDPRICEM]) {
@@ -204,7 +210,6 @@
       $address = civicrm_api3('Address', 'get', ['contact_id' => $child1])['values'];
       $phone = civicrm_api3('Phone', 'get', ['contact_id' => $child1])['values'];
 
-
       $relatedContacts = [
         'parent1' => [
           'first_name' => $form->_params[PARENT1FNM] ?: '',
@@ -221,18 +226,21 @@
           'last_name' => $form->_params[CHILD2LNM] ?: '',
           'birth_date' => $form->_params[CHILD2DOBM] ?: '',
           'email' => $form->_params[CHILD2EMM] ?: '',
+          GRADE => $form->_params[CHILD2G] ?: '',
         ],
         'child3' => [
           'first_name' => $form->_params[CHILD3FNM] ?: '',
           'last_name' => $form->_params[CHILD3LNM] ?: '',
           'birth_date' => $form->_params[CHILD3DOBM] ?: '',
           'email' => $form->_params[CHILD3EMM] ?: '',
+          GRADE => $form->_params[CHILD3G] ?: '',
         ],
         'child4' => [
           'first_name' => $form->_params[CHILD4FNM] ?: '',
           'last_name' => $form->_params[CHILD4LNM] ?: '',
           'birth_date' => $form->_params[CHILD4DOBM] ?: '',
           'email' => $form->_params[CHILD4EMM] ?: '',
+          GRADE => $form->_params[CHILD4G] ?: '',
         ],
       ];
       foreach ($relatedContacts as $person => $params) {
