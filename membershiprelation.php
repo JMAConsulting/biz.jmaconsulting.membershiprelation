@@ -171,6 +171,9 @@
           if (empty($fields[CHILD2FNM]) && empty($fields[CHILD2LNM])) {
             $errors[CHILD2FNM] = ts('First and last name of Member 2 must be entered.');
           }
+          if (empty($fields[CHILD2DOBM])) {
+            $errors[CHILD2DOBM] = ts('Please enter birthday for Member 2.');
+          }
           break;
         case THREEGIRLS:
           if (empty($fields[CHILD2FNM]) && empty($fields[CHILD2LNM])) {
@@ -178,6 +181,12 @@
           }
           if (empty($fields[CHILD3FNM]) && empty($fields[CHILD3LNM])) {
             $errors[CHILD3FNM] = ts('First and last name of Member 3 must be entered.');
+          }
+          if (empty($fields[CHILD2DOBM])) {
+            $errors[CHILD2DOBM] = ts('Please enter birthday for Member 2.');
+          }
+          if (empty($fields[CHILD3DOBM])) {
+            $errors[CHILD3DOBM] = ts('Please enter birthday for Member 3.');
           }
           break;
         case FOURGIRLS:
@@ -189,6 +198,15 @@
           }
           if (empty($fields[CHILD4FNM]) && empty($fields[CHILD4LNM])) {
             $errors[CHILD4FNM] = ts('First and last name of Member 4 must be entered.');
+          }
+          if (empty($fields[CHILD2DOBM])) {
+            $errors[CHILD2DOBM] = ts('Please enter birthday for Member 2.');
+          }
+          if (empty($fields[CHILD3DOBM])) {
+            $errors[CHILD3DOBM] = ts('Please enter birthday for Member 3.');
+          }
+          if (empty($fields[CHILD4DOBM])) {
+            $errors[CHILD4DOBM] = ts('Please enter birthday for Member 4.');
           }
           break;
         default:
@@ -216,11 +234,11 @@
           'last_name' => $form->_params[PARENT1LNM] ?: '',
           'email' => $form->_params[PARENT1EMAILM] ?: '',
         ],
-        /*'parent2' => [
+        'parent2' => [
           'first_name' => $form->_params[PARENT2FNM] ?: '',
           'last_name' => $form->_params[PARENT2LNM] ?: '',
           'email' => $form->_params[PARENT2EMAILM] ?: '',
-        ],*/
+        ],
         'child2' => [
           'first_name' => $form->_params[CHILD2FNM] ?: '',
           'last_name' => $form->_params[CHILD2LNM] ?: '',
@@ -276,34 +294,34 @@
       // Create relationships
       $sibling = CRM_Core_DAO::getFieldValue('CRM_Contact_DAO_RelationshipType', 'Sibling of', 'id', 'name_a_b');
       $childRel = CRM_Core_DAO::getFieldValue('CRM_Contact_DAO_RelationshipType', 'Child of', 'id', 'name_a_b');
-      //$spouseRel = CRM_Core_DAO::getFieldValue('CRM_Contact_DAO_RelationshipType', 'Spouse of', 'id', 'name_a_b');
+      $spouseRel = CRM_Core_DAO::getFieldValue('CRM_Contact_DAO_RelationshipType', 'Spouse of', 'id', 'name_a_b');
 
       // Parent of Relationship with 1st guardian
       if (!empty($contact['parent1'])) {
         $parent1 = $contact['parent1'][0];
         createRelationshipMember($child1, $parent1, $childRel);
         foreach ($contact as $person => $con) {
-          if (in_array($person, ['child2', 'child3', 'child4']) && !empty($con[$person])) {
+          if (in_array($person, ['child2', 'child3', 'child4']) && !empty($contact[$person][0])) {
             createRelationshipMember($contact[$person][0], $parent1, $childRel);
           }
         }
       }
 
       // Parent of Relationship with 2nd guardian
-      /*if (!empty($contact['parent2'])) {
+      if (!empty($contact['parent2'])) {
         $parent2 = $contact['parent2'][0];
         createRelationshipMember($child1, $parent2, $childRel);
         foreach ($contact as $person => $con) {
-          if (in_array($person, ['child2', 'child3', 'child4']) && !empty($con[$person])) {
+          if (in_array($person, ['child2', 'child3', 'child4']) && !empty($contact[$person][0])) {
             createRelationshipMember($contact[$person][0], $parent2, $childRel);
           }
         }
-      }*/
+      }
 
       // Spouse Relationships
-      /*if (!empty($contact['parent1']) && !empty($contact['parent2'])) {
+      if (!empty($contact['parent1']) && !empty($contact['parent2'])) {
         createRelationshipMember($contact['parent1'][0], $contact['parent2'][0], $spouseRel);
-      }*/
+      }
 
       // Child Relationships
       if (!empty($contact['child2'])) {
