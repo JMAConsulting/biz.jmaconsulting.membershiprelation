@@ -227,6 +227,7 @@
       $child1 = $form->_contactID;
       $address = civicrm_api3('Address', 'get', ['contact_id' => $child1])['values'];
       $phone = civicrm_api3('Phone', 'get', ['contact_id' => $child1])['values'];
+      $parent1ID = NULL;
 
       $relatedContacts = [
         'parent1' => [
@@ -298,7 +299,7 @@
 
       // Parent of Relationship with 1st guardian
       if (!empty($contact['parent1'])) {
-        $parent1 = $contact['parent1'][0];
+        $parent1 = $parent1ID = $contact['parent1'][0];
         createRelationshipMember($child1, $parent1, $childRel);
         foreach ($contact as $person => $con) {
           if (in_array($person, ['child2', 'child3', 'child4']) && !empty($contact[$person][0])) {
@@ -335,6 +336,20 @@
         createRelationshipMember($child1, $contact['child4'][0], $sibling);
         createRelationshipMember($contact['child2'][0], $contact['child4'][0], $sibling);
         createRelationshipMember($contact['child3'][0], $contact['child4'][0], $sibling);
+      }
+
+      $membershipID = CRM_Core_DAO::singleValueQuery("SELECT MAX(id) FROM civicrm_membership WHERE contact_id = " . $child1);
+      if ($parent1ID && $membershipID) {
+        civicrm_api3('Membership', 'create', [
+          'id' => $membershipID,
+          'contact_id' => $parent1ID,
+        ]);
+        if ($contributionID = CRM_Core_DAO::singleValueQuery("SELECT MAX(contribution_id) FROM civicrm_membership_payment WHERE membership_id = " . $membershipID)) {
+          civicrm_api3('Contribution', 'create', [
+            'id' => $contributionID,
+            'contact_id' => $parent1ID,
+          ]);
+        }
       }
     }
   }
