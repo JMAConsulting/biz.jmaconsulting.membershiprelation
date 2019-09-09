@@ -227,7 +227,7 @@
       $child1 = $form->_contactID;
       $address = civicrm_api3('Address', 'get', ['contact_id' => $child1])['values'];
       $phone = civicrm_api3('Phone', 'get', ['contact_id' => $child1])['values'];
-      $parent1Email = $parent1ID = NULL;
+      $parent1ID = NULL;
 
       $relatedContacts = [
         'parent1' => [
@@ -262,6 +262,12 @@
           GRADE => $form->_params[CHILD4G] ?: '',
         ],
       ];
+
+      $email = CRM_Core_DAO::singleValueQuery("SELECT email FROM civicrm_email WHERE is_primary = 1 AND contact_id = " . $child1);
+      if (!$email && !empty($relatedContacts['parent1']['email'])) {
+        civicrm_api3('Contact', 'create', ['id' => $child1, 'email' => $relatedContacts['parent1']['email']]);
+      }
+
       foreach ($relatedContacts as $person => $params) {
         if (empty($params['first_name']) && empty($params['last_name'])) {
           continue;
@@ -274,8 +280,8 @@
         if ($cid) {
           $params['contact_id'] = $cid;
         }
-        if (empty($params['email']) && !empty($parent1Email)) {
-          $params['email'] = $parent1Email;
+        if ($person != 'parent1' && empty($params['email'])) {
+          $params['email'] = $relatedContacts['parent1']['email'];
         }
         $contact[$person] = (array) civicrm_api3('Contact', 'create', $params)['id'];
 
@@ -303,7 +309,6 @@
       // Parent of Relationship with 1st guardian
       if (!empty($contact['parent1'])) {
         $parent1 = $parent1ID = $contact['parent1'][0];
-        $parent1Email = $params['email'];
         createRelationshipMember($child1, $parent1, $childRel);
         foreach ($contact as $person => $con) {
           if (in_array($person, ['child2', 'child3', 'child4']) && !empty($contact[$person][0])) {
@@ -368,7 +373,7 @@
       "relationship_type_id" => $type,
     );
     $rel = civicrm_api3("Relationship", "get", $relationshipParams);
-    if ($rel['count'] < 1) {
+    if ($rel['count'] == 0) {
       civicrm_api3("Relationship", "create", $relationshipParams);
     }
   }
