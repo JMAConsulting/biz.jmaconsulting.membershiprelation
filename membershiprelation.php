@@ -342,6 +342,8 @@
         createRelationshipMember($contact['child3'][0], $contact['child4'][0], $sibling);
       }
 
+      // part where membership is assigned to parent instead of 1st child
+      /**
       $membershipID = CRM_Core_DAO::singleValueQuery("SELECT MAX(id) FROM civicrm_membership WHERE contact_id = " . $child1);
       if ($parent1ID && $membershipID) {
         civicrm_api3('Membership', 'create', [
@@ -355,6 +357,7 @@
           ]);
         }
       }
+      */
     }
   }
 
