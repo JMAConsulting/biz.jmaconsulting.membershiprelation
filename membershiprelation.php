@@ -263,9 +263,8 @@
         ],
       ];
 
-      $email = CRM_Core_DAO::singleValueQuery("SELECT email FROM civicrm_email WHERE is_primary = 1 AND contact_id = " . $child1);
-      if (!$email && !empty($relatedContacts['parent1']['email'])) {
-        civicrm_api3('Contact', 'create', ['id' => $child1, 'email' => $relatedContacts['parent1']['email']]);
+      if (empty($form->_params['email-Primary']) && !empty($relatedContacts['parent1']['email'])) {
+        civicrm_api3('Email', 'create', ['contact_id' => $child1, 'email' => $relatedContacts['parent1']['email'], 'is_primary' => 1]);
       }
 
       foreach ($relatedContacts as $person => $params) {
