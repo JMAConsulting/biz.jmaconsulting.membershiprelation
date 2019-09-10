@@ -309,6 +309,10 @@
       if (!empty($contact['parent1'])) {
         $parent1 = $parent1ID = $contact['parent1'][0];
         createRelationshipMember($child1, $parent1, $childRel);
+
+        // create wp user
+        CRM_Volunteerreference_Util::createUser($parent1);
+
         foreach ($contact as $person => $con) {
           if (in_array($person, ['child2', 'child3', 'child4']) && !empty($contact[$person][0])) {
             createRelationshipMember($contact[$person][0], $parent1, $childRel);
