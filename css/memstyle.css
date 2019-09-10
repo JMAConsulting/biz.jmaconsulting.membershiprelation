@@ -1,3 +1,11 @@
 #crm-container label {
     color: #6a6a6a !important;
 }
+
+.crm-not-you-message {
+    display: none;
+}
+
+#crm-container .select2-container .select2-choice {
+    line-height: 18px !important;
+}
