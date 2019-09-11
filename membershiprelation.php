@@ -152,9 +152,30 @@
    */
   function membershiprelation_civicrm_buildForm($formName, &$form) {
     if ($formName == "CRM_Contribute_Form_Contribution_Main" && $form->getVar('_id') == 1) {
+      $submitButton = [
+        'type' => 'upload',
+        'name' => ts('Submit'),
+        'spacing' => '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;',
+        'isDefault' => TRUE,
+      ];
+      $form->addButtons([$submitButton]);
       CRM_Core_Region::instance('page-body')->add(array(
         'template' => 'CRM/Membershiprelation/ParentChild.tpl',
       ));
+    }
+    if ($formName == "CRM_Contribute_Form_Contribution_Confirm" && $form->getVar('_id') == 1) {
+      $form->addButtons([
+        [
+          'type' => 'next',
+          'name' => ts('Confirm'),
+          'spacing' => '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;',
+          'isDefault' => TRUE,
+        ],
+        [
+          'type' => 'back',
+          'name' => ts('Go Back'),
+        ],
+      ]);
     }
   }
 

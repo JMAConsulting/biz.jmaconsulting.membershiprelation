@@ -9,3 +9,11 @@
 #crm-container .select2-container .select2-choice {
     line-height: 18px !important;
 }
+
+.page-breadcrumb {
+    display: none;
+}
+
+.bg-grey {
+    background-color: transparent !important;
+}
