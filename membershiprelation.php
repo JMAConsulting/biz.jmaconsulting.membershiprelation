@@ -1,6 +1,7 @@
 <?php
 
   require_once 'membershiprelation.civix.php';
+  require_once '/home/girlsinscience.ca/htdocs/wp-content/uploads/civicrm/ext/biz.jmaconsulting.volunteerreference/CRM/Volunteerreference/Utils.php';
   require_once 'membershiprelation.constants.php';
   use CRM_Membershiprelation_ExtensionUtil as E;
 
@@ -332,7 +333,7 @@
         createRelationshipMember($child1, $parent1, $childRel);
 
         // create wp user
-        CRM_Volunteerreference_Util::createUser($parent1);
+        //CRM_Volunteerreference_Utils::createWpUser($parent1);
 
         foreach ($contact as $person => $con) {
           if (in_array($person, ['child2', 'child3', 'child4']) && !empty($contact[$person][0])) {
