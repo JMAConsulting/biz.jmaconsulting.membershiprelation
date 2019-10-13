@@ -16,6 +16,43 @@
     _membershiprelation_civix_civicrm_config($config);
   }
 
+  function membershiprelation_civicrm_summaryActions(&$menu, $contactId) {
+    $menu['otherActions']['user-add'] = [
+      'title' => ts('Create User Record'),
+      'description' => ts('Create User Record'),
+      'weight' => 25,
+      'ref' => 'crm-contact-user-add',
+      'key' => 'user-add',
+      'tab' => 'user-add',
+      'class' => 'user-add',
+      'href' => CRM_Utils_System::url('civicrm/contact/view/useradd', 'reset=1&action=add&cid=' . $contactId),
+      'icon' => 'crm-i fa-user-plus',
+    ];
+  }
+
+  function _saveChapter($id, $chapter = NULL) {
+    $ch = CRM_Core_DAO::singleValueQuery("SELECT cagis_chapter_1 FROM civicrm_value_cagis_members_1 WHERE entity_id = $id");
+    if (empty($ch) && !empty($chapter)) {
+      CRM_Core_DAO::singleValueQuery("INSERT INTO civicrm_value_cagis_members_1 (entity_id, cagis_chapter_1) VALUES ($id, '$chapter')");
+    }
+  }
+
+  function membershiprelation_civicrm_postSave_civicrm_membership($dao) {
+    if (isset($dao->owner_membership_id) && !empty($dao->owner_membership_id)) {
+      $chapter = CRM_Core_DAO::singleValueQuery("SELECT cagis_chapter_1 FROM civicrm_value_cagis_members_1 WHERE entity_id = $dao->owner_membership_id");
+      _saveChapter($dao->id, $chapter);
+    }
+  }
+
+  function membershiprelation_civicrm_post($op, $objectName, $objectId, &$objectRef) {
+    if ($op == "create" && $objectName == "Membership") {
+      if (isset($objectRef->owner_membership_id) && !empty($objectRef->owner_membership_id)) {
+       $chapter = CRM_Core_DAO::singleValueQuery("SELECT cagis_chapter_1 FROM civicrm_value_cagis_members_1 WHERE entity_id = $objectRef->owner_membership_id");
+        _saveChapter($objectId, $chapter);
+      }
+    }
+  }
+
   /**
    * Implements hook_civicrm_xmlMenu().
    *
