@@ -430,11 +430,7 @@
 
   function createWPUser($contactID, $sendResetLink = FALSE) {
     $contact = civicrm_api3('Contact', 'getsingle', ['id' => $contactID]);
-    $ufID = CRM_Core_DAO::getFieldValue('CRM_Core_BAO_UFMatch', $contactID, 'uf_id', 'contact_id');
-    $ufID = $ufID ?:
-      (!empty($contact['email'])) ?
-        CRM_Core_DAO::singleValueQuery("SELECT MAX(uf_id) FROM civicrm_uf_match WHERE uf_name =  '" . $contact['email'] . "' ") :
-          NULL;
+    $ufID = CRM_Core_DAO::singleValueQuery("SELECT MAX(uf_id) FROM civicrm_uf_match WHERE ( contact_id = " . $contactID . " OR uf_name = " . $contact['email'] . "' ) ");
 
     if (!$ufID) {
       $cmsName = strtolower($contact['first_name'] . '.' . $contact['last_name'] . '.' . $contact['id']);
@@ -444,11 +440,14 @@
         'cms_name' => $cmsName,
         'email' => $contact['email'],
       ];
-      $ufID = CRM_Core_BAO_CMSUser::create($params, 'email');
-    }
-    $u = new WP_User($ufID);
-    if ($sendResetLink) {
-      sendResetLink($u);
+      try {
+        $ufID = CRM_Core_BAO_CMSUser::create($params, 'email');
+        $u = new WP_User($ufID);
+        if ($sendResetLink) {
+          sendResetLink($u);
+        }
+      }
+      catch (Exception $e) {}
     }
   }
 
