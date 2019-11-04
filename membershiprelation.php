@@ -430,7 +430,7 @@
 
   function createWPUser($contactID, $sendResetLink = FALSE) {
     $contact = civicrm_api3('Contact', 'getsingle', ['id' => $contactID]);
-    $ufID = CRM_Core_DAO::singleValueQuery("SELECT MAX(uf_id) FROM civicrm_uf_match WHERE ( contact_id = " . $contactID . " OR uf_name = " . $contact['email'] . "' ) ");
+    $ufID = CRM_Core_DAO::singleValueQuery("SELECT MAX(uf_id) FROM civicrm_uf_match WHERE ( contact_id = " . $contactID . " OR uf_name = '" . $contact['email'] . "' ) ");
 
     if (!$ufID) {
       $cmsName = strtolower($contact['first_name'] . '.' . $contact['last_name'] . '.' . $contact['id']);
