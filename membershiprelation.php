@@ -441,13 +441,23 @@
         'email' => $contact['email'],
       ];
       try {
-        $ufID = CRM_Core_BAO_CMSUser::create($params, 'email');
-        $u = new WP_User($ufID);
-        if ($sendResetLink) {
-          sendResetLink($u);
+        $config = CRM_Core_Config::singleton();
+        $mail = 'email';
+        $ufID = $config->userSystem->createUser($params, $mail);
+
+        if ($ufID !== FALSE) {
+          CRM_Core_DAO::executeQuery(sprintf("
+            REPLACE INTO civicrm_uf_match(domain_id , uf_id , uf_name , contact_id)
+            VALUES (%d, $ufID, '%s', %d) ", CRM_Core_Config::domainID(), $contact['email'], $contact['id']
+          ));
+
+          $u = new WP_User($ufID);
+          if ($sendResetLink) {
+            sendResetLink($u);
+          }
         }
       }
-      catch (Exception $e) {}
+      catch (CRM_Core_Exception $e) {}
     }
   }
 
