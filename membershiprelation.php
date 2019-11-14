@@ -1,7 +1,6 @@
 <?php
 
   require_once 'membershiprelation.civix.php';
-  require_once '/home/girlsinscience.ca/htdocs/wp-content/uploads/civicrm/ext/biz.jmaconsulting.volunteerreference/CRM/Volunteerreference/Utils.php';
   require_once 'membershiprelation.constants.php';
   use CRM_Membershiprelation_ExtensionUtil as E;
 
@@ -337,6 +336,9 @@
         $params['contact_type'] = 'Individual';
         if ($cid) {
           $params['contact_id'] = $cid;
+        }
+        if (in_array($person, ['child2', 'child3', 'child4'])) {
+          $params['contact_sub_type'] = 'Child';
         }
         if ($person != 'parent1' && empty($params['email'])) {
           $params['email'] = $relatedContacts['parent1']['email'];
