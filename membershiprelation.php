@@ -343,7 +343,7 @@
         if ($person != 'parent1' && empty($params['email'])) {
           $params['email'] = $relatedContacts['parent1']['email'];
         }
-        $contact[$person] = (array) civicrm_api3('Contact', 'create', $params)['id'];
+        $contact[$person] = (array) civicrm_api3('Contact', 'create', array_merge($params, ['id' => $cid]))['id'];
 
         // Add address
         foreach ($address as $k => &$val) {
