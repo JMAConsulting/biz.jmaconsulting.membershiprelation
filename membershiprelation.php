@@ -273,6 +273,28 @@
     }
   }
 
+  function _dedupeParams(&$params) {
+    $clauses = [];
+    foreach (['first_name', 'last_name', 'email'] as $attribute) {
+      if (!empty($params[$attribute])) {
+        if ($attribute == 'email' && !empty($params['birth_date'])) {
+          $clauses[] = sprintf("( email = '%s' OR birth_date = '%s' )", $params[$attribute], CRM_Utils_Date::processDate($params['birth_date']));
+        }
+        else {
+          $clauses[] = "{$attribute} = '" . $params[$attribute] ."'";
+        }
+      }
+    }
+    if (!empty($clauses)) {
+      $clauses[] = "contact_type LIKE '%Individual%'";
+      $sql = "SELECT MIN(cc.id)
+        FROM civicrm_contact cc
+         INNER JOIN civicrm_email e ON e.contact_id = cc.id
+        WHERE " . implode (" AND ", $clauses);
+      $params['contact_id'] = CRM_Core_DAO::singleValueQuery($sql);
+    }
+  }
+
   /**
    * Implements hook_civicrm_postProcess().
    *
@@ -329,21 +351,16 @@
         if (empty($params['first_name']) && empty($params['last_name'])) {
           continue;
         }
-        $dedupeParams = CRM_Dedupe_Finder::formatParams($params, 'Individual');
-        $dedupeParams['check_permission'] = FALSE;
-        $dupes = CRM_Dedupe_Finder::dupesByParams($dedupeParams, 'Individual', NULL, array(), 1);
-        $cid = CRM_Utils_Array::value('0', $dupes, NULL);
         $params['contact_type'] = 'Individual';
-        if ($cid) {
-          $params['contact_id'] = $cid;
-        }
+
         if (in_array($person, ['child2', 'child3', 'child4'])) {
           $params['contact_sub_type'] = 'Child';
         }
         if ($person != 'parent1' && empty($params['email'])) {
           $params['email'] = $relatedContacts['parent1']['email'];
         }
-        $contact[$person] = (array) civicrm_api3('Contact', 'create', array_merge($params, ['id' => $cid]))['id'];
+        _dedupeParams($params);
+        $contact[$person] = (array) civicrm_api3('Contact', 'create', $params)['id'];
 
         // Add address
         foreach ($address as $k => &$val) {
