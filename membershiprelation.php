@@ -305,6 +305,11 @@
   function membershiprelation_civicrm_postProcess($formName, &$form) {
     if ($formName == "CRM_Contribute_Form_Contribution_Confirm" && $form->getVar('_id') == 1) {
       $child1 = $form->_contactID;
+      $child1Details = [];
+      if (!empty($child1)) {
+        $child1Details = CRM_Utils_Array::value($child1, civicrm_api3('Contact', 'get', ['id' => $child1])['values']);
+      }
+
       $address = civicrm_api3('Address', 'get', ['contact_id' => $child1])['values'];
       $phone = civicrm_api3('Phone', 'get', ['contact_id' => $child1])['values'];
       $parent1ID = NULL;
@@ -392,7 +397,7 @@
         createWpUser($parent1, TRUE);
 
         foreach ($contact as $person => $con) {
-          if (in_array($person, ['child2', 'child3', 'child4']) && !empty($contact[$person][0])) {
+          if (in_array($person, ['child2', 'child3', 'child4']) && !empty($contact[$person][0]) && ($contact[$person][0] != $parent1)) {
             createRelationshipMember($contact[$person][0], $parent1, $childRel);
           }
         }
@@ -426,6 +431,18 @@
         createRelationshipMember($child1, $contact['child4'][0], $sibling);
         createRelationshipMember($contact['child2'][0], $contact['child4'][0], $sibling);
         createRelationshipMember($contact['child3'][0], $contact['child4'][0], $sibling);
+      }
+
+      if (!empty($child1Details['first_name']) && !empty($child1Details['last_name']) && !empty($child1)) {
+        $p = [
+          'id' => $child1,
+          'first_name' => $child1Details['first_name'],
+          'last_name' => $child1Details['last_name'],
+        ];
+        if (!empty($child1Details['email'])) {
+          $p['email'] = $child1Details['email'];
+        }
+        civicrm_api3('Contact', 'create', $p);
       }
 
       // part where membership is assigned to parent instead of 1st child
@@ -505,6 +522,9 @@
   }
 
   function createRelationshipMember($cida, $cidb, $type) {
+    if ($cida == $cidb) {
+      return;
+    }
     $relationshipParams = array(
       "contact_id_a" => $cida,
       "contact_id_b" => $cidb,
