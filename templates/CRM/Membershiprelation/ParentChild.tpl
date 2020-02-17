@@ -1,6 +1,8 @@
 {literal}
 <script type="text/javascript">
     CRM.$(function($) {
+        $('#membership').parent().prepend($('#editrow-custom_1'));
+        $('#editrow-custom_1').append($('#helprow-custom_1'));
         var childprice = '{/literal}{$smarty.const.CHILDPRICEM}{literal}';
 
         var onegirl = '{/literal}{$smarty.const.ONEGIRL}{literal}';
@@ -123,4 +125,3 @@
     });
 </script>
 {/literal}
-
