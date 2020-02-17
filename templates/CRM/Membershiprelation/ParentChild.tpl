@@ -3,6 +3,31 @@
     CRM.$(function($) {
         $('#membership').parent().prepend($('#editrow-custom_1'));
         $('#editrow-custom_1').append($('#helprow-custom_1'));
+
+
+        function calculatePriceTotalOnChapterSelect() {
+          var total = 0;
+          $('input[id*="custom_1_"]:checked').each(function(e) {
+            total += 1;
+          });
+          if (total > 0) {
+            total = total * $('#priceset [price]:checked').data('amount');
+            display(total);
+          }
+        }
+        // calculate price total on page load
+        calculatePriceTotalOnChapterSelect();
+
+        // calculate price total on chapter selection
+        $('input[id*="custom_1_"]').on('click', function(e) {
+          calculatePriceTotalOnChapterSelect();
+        });
+
+        // calculate price total on price amount selection
+        $("#priceset [price]").on('click', function (e) {
+          calculatePriceTotalOnChapterSelect();
+        });
+
         var childprice = '{/literal}{$smarty.const.CHILDPRICEM}{literal}';
 
         var onegirl = '{/literal}{$smarty.const.ONEGIRL}{literal}';
