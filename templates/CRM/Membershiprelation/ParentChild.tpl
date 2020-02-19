@@ -3,15 +3,27 @@
     CRM.$(function($) {
         $('#membership').parent().prepend($('#editrow-custom_1'));
         $('#editrow-custom_1').append($('#helprow-custom_1'));
-
+        $('div.chapter_memberships-section').addClass('hiddenElement');
 
         function calculatePriceTotalOnChapterSelect() {
           var total = 0;
+          var priceAmount = parseInt($('#priceset [price]:checked').data('amount'));
           $('input[id*="custom_1_"]:checked').each(function(e) {
-            total += 1;
+            var chapter = $(this).attr('name').replace('custom_1[', '').replace(']', '').replace(' ', ', ');
+            $('.chapter_memberships-content .crm-price-amount-label').each(function(e) {
+              if ($(this).text().match(chapter) !== null) {
+                if (parseInt($(this).parent().parent().children('input').data('amount')) == priceAmount) {
+                  $(this).parent().parent().children('input').prop('checked', true);
+                  total += 1;
+                }
+                else {
+                  $(this).parent().parent().children('input').prop('checked', false);
+                }
+              }
+            });
           });
           if (total > 0) {
-            total = total * $('#priceset [price]:checked').data('amount');
+            total = total * priceAmount;
             display(total);
           }
         }

@@ -201,6 +201,16 @@
       ));
     }
     if ($formName == "CRM_Contribute_Form_Contribution_Confirm" && $form->getVar('_id') == 1) {
+      if (!empty($form->_lineItem)) {
+        $membershipPriceFieldIDs = [];
+        $priceSetId = key($form->_lineItem);
+        foreach ((array) $form->_lineItem[$priceSetId] as $lineItem) {
+          $membershipPriceFieldIDs['id'] = $priceSetId;
+          $membershipPriceFieldIDs[] = $lineItem['price_field_value_id'];
+        }
+        $form->set('memberPriceFieldIDS', $membershipPriceFieldIDs);
+      }
+
       $form->addButtons([
         [
           'type' => 'next',
@@ -213,6 +223,74 @@
           'name' => ts('Go Back'),
         ],
       ]);
+    }
+
+    if ($formName == 'CRM_Price_Form_Field') {
+      // form fields of Custom Option rows
+      $_showHide = new CRM_Core_ShowHideBlocks('', '');
+      $attributes = CRM_Core_DAO::getAttribute('CRM_Price_DAO_PriceFieldValue');
+      $financialType = CRM_Financial_BAO_FinancialType::getIncomeFinancialType();
+      foreach ($financialType as $finTypeId => $type) {
+        if (CRM_Financial_BAO_FinancialType::isACLFinancialTypeStatus()
+          && !CRM_Core_Permission::check('add contributions of type ' . $type)
+        ) {
+          unset($financialType[$finTypeId]);
+        }
+      }
+      if (count($financialType)) {
+        $form->assign('financialType', $financialType);
+      }
+      for ($i = 1; $i <= 100; $i++) {
+
+        //the show hide blocks
+        $showBlocks = 'optionField_' . $i;
+        if ($i > 2) {
+          $_showHide->addHide($showBlocks);
+          if ($i == 100) {
+            $_showHide->addHide('additionalOption');
+          }
+        }
+        else {
+          $_showHide->addShow($showBlocks);
+        }
+        // label
+        $attributes['label']['size'] = 25;
+        $form->add('text', 'option_label[' . $i . ']', ts('Label'), $attributes['label']);
+
+        // amount
+        $form->add('text', 'option_amount[' . $i . ']', ts('Amount'), $attributes['amount']);
+        $form->addRule('option_amount[' . $i . ']', ts('Please enter a valid amount for this field.'), 'money');
+
+        //Financial Type
+        $form->add(
+          'select',
+          'option_financial_type_id[' . $i . ']',
+          ts('Financial Type'),
+          ['' => ts('- select -')] + $financialType
+        );
+        $membershipTypes = CRM_Member_PseudoConstant::membershipType();
+        $js = ['onchange' => "calculateRowValues( $i );"];
+
+        $form->add('select', 'membership_type_id[' . $i . ']', ts('Membership Type'),
+          ['' => ' '] + $membershipTypes, FALSE, $js
+        );
+        $form->add('text', 'membership_num_terms[' . $i . ']', ts('Number of Terms'), CRM_Utils_Array::value('membership_num_terms', $attributes));
+
+        // weight
+        $form->add('number', 'option_weight[' . $i . ']', ts('Order'), $attributes['weight']);
+
+        // is active ?
+        $form->add('checkbox', 'option_status[' . $i . ']', ts('Active?'));
+
+        $form->add('select', 'option_visibility_id[' . $i . ']', ts('Visibility'), $visibilityType);
+        $defaultOption[$i] = $form->createElement('radio', NULL, NULL, NULL, $i);
+
+        //for checkbox handling of default option
+        $form->add('checkbox', "default_checkbox_option[$i]", NULL);
+      }
+      //default option selection
+      $form->addGroup($defaultOption, 'default_option');
+      $_showHide->addToTemplate();
     }
   }
 
@@ -344,6 +422,21 @@
           ]);
         }
       }
+    }
+    if ($formName == "CRM_Contribute_Form_Contribution_Main" && $form->getVar('_id') == 1) {
+      $lineItem = $form->get('lineItem');
+      // remove the default price field selection from submitted variables
+      $priceSetId = key($lineItem);
+      foreach ($lineItem[$priceSetId] as $key => $priceFieldValue) {
+        if (in_array($key, [ONEGIRL, TWOGIRLS, THREEGIRLS, FOURGIRLS])) {
+          unset($lineItem[$priceSetId][$key]);
+          $form->_params['amount'] -= $priceFieldValue['line_total'];
+        }
+      }
+      $form->set('amount', $form->_params['amount']);
+      unset($form->_params[CHILDPRICEM]);
+      $form->set('lineItem', $lineItem);
+      $form->_lineItem = $lineItem;
     }
     if ($formName == "CRM_Contribute_Form_Contribution_Confirm" && $form->getVar('_id') == 1) {
       $child1 = $form->_contactID;
