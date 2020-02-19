@@ -223,6 +223,11 @@
    * @param CRM_Core_Form $form
    */
   function membershiprelation_civicrm_validateForm($formName, &$fields, &$files, &$form, &$errors) {
+    if ($formName == "CRM_Contribute_Form_Contribution_Main" || $formName == 'CRM_Price_Form_Field') {
+      if (strstr(CRM_Utils_Array::value('_qf_default', $form->_errors, ''), 'You have selected multiple memberships')) {
+        unset($form->_errors['_qf_default']);
+      }
+    }
     if ($formName == "CRM_Contribute_Form_Contribution_Main" && $form->getVar('_id') == 1) {
       switch ($fields[CHILDPRICEM]) {
         case TWOGIRLS:
