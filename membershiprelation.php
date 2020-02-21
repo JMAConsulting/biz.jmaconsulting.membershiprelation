@@ -351,6 +351,10 @@
       if (empty($form->_params['email-Primary']) && !empty($relatedContacts['parent1']['email'])) {
         civicrm_api3('Email', 'create', ['contact_id' => $child1, 'email' => $relatedContacts['parent1']['email'], 'is_primary' => 1]);
       }
+      // If they have opted into the e-list subscribe the first child.
+      if (!empty($form->_params['custom_43'])) {
+        subscribeMemberToElist($child1);
+      }
 
       foreach ($relatedContacts as $person => $params) {
         if (empty($params['first_name']) && empty($params['last_name'])) {
@@ -380,6 +384,11 @@
           unset($val['id']);
           $val['contact_id'] = $contact[$person][0];
           civicrm_api3('Phone', 'create', $phone[$k]);
+        }
+
+        // If they have opted into the e-list subscribe the related contact as well
+        if (!empty($form->_params['custom_43']) && !empty($params['email'])) {
+          subscribeMemberToElist($contact[$person][0]);
         }
       }
 
@@ -537,6 +546,14 @@
     if ($rel['count'] == 0) {
       civicrm_api3("Relationship", "create", $relationshipParams);
     }
+  }
+
+  function subscribeMemberToElist($contactId) {
+    civicrm_api3('GroupContact', 'create', [
+      'contact_id' => $contactId,
+      'group_id' => 2,
+      'status' => 'Added',
+    ]);
   }
 
   // --- Functions below this ship commented out. Uncomment as required. ---
