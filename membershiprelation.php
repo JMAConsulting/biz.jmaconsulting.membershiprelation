@@ -32,7 +32,7 @@
   function _saveChapter($id, $chapter = NULL) {
     $ch = CRM_Core_DAO::singleValueQuery("SELECT cagis_chapter_1 FROM civicrm_value_cagis_members_1 WHERE entity_id = $id");
     if (empty($ch) && !empty($chapter)) {
-      CRM_Core_DAO::singleValueQuery("INSERT INTO civicrm_value_cagis_members_1 (entity_id, cagis_chapter_1) VALUES ($id, '$chapter')");
+      CRM_Core_DAO::singleValueQuery("INSERT IGNORE INTO civicrm_value_cagis_members_1 (entity_id, cagis_chapter_1) VALUES ($id, '$chapter')");
     }
   }
 
@@ -476,6 +476,9 @@
         'cms_name' => $cmsName,
         'email' => $contact['email'],
       ];
+      if ($sendResetLink) {
+        $params['disable_notification'] = TRUE;
+      }
       try {
         $config = CRM_Core_Config::singleton();
         $mail = 'email';
@@ -514,7 +517,7 @@
     $headers = array();
 
     add_filter( 'wp_mail_content_type', function( $content_type ) {return 'text/html';});
-    $headers[] = 'From: Your company name <cagis@uwo.ca>'."\r\n";
+    $headers[] = 'From: Canadian Association for Girls In Science (CAGIS) <info@girlsinscience.ca>'."\r\n";
     wp_mail( $email, $subject, $message, $headers);
 
     // Reset content-type to avoid conflicts -- http://core.trac.wordpress.org/ticket/23578
