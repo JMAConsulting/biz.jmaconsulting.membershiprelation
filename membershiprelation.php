@@ -543,8 +543,13 @@
       "relationship_type_id" => $type,
     );
     $rel = civicrm_api3("Relationship", "get", $relationshipParams);
-    if ($rel['count'] == 0) {
-      civicrm_api3("Relationship", "create", $relationshipParams);
+    if (empty($rel['count'])) {
+      try {
+        civicrm_api3("Relationship", "create", $relationshipParams);
+      }
+      catch (Exception $e) {
+        Civi::log()->debug('Error from trying to create related member with params', ['params' => $relationshipParams]);
+      }
     }
   }
 
