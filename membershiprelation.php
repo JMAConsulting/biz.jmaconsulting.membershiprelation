@@ -514,7 +514,7 @@
     $email = $user->user_email;
     $adt_rp_key = get_password_reset_key( $user );
     $user_login = $user->user_login;
-    $rp_link = '<a href="' . wp_login_url()."/resetpass/?key=$adt_rp_key&login=" . rawurlencode($user_login) . '">' . wp_login_url()."/resetpass/?key=$adt_rp_key&login=" . rawurlencode($user_login) . '</a>';
+    $rp_link = '<a href="' . wp_login_url()."?action=resetpass&key=$adt_rp_key&login=" . rawurlencode($user_login) . '">' . wp_login_url()."?action=resetpass&key=$adt_rp_key&login=" . rawurlencode($user_login) . '</a>';
 
     $message = "Hi ".$firstname.",<br>";
     $message .= "An account has been created on ".get_bloginfo( 'name' )." for email address ".$email."<br>";
