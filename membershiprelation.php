@@ -388,39 +388,14 @@
   function membershiprelation_civicrm_postProcess($formName, &$form) {
     if ($formName == 'CRM_Admin_Form_Options' && $form->getVar('_gName') == 'cagis_chapter') {
       $params = $form->exportValues();
-
-      $membershipID = NULL;
-      if (!empty($params['label'])) {
-        $chapterName = $params['label'];
-        $membershipID = CRM_Utils_Array::value('id', civicrm_api3('MembershipType', 'get', ['name' => ['LIKE' => "%$chapterName%"]]));
-        if ($membershipID) {
-          return;
-        }
-        $membershipOwnerID = civicrm_api3('Contact', 'get', [
-          'organisation_name' => $chapterName,
-          'contact_sub_type' => 'Chapter',
-        ])['id'];
-        $membershipTypes = ['Individual Membership', 'Family Membership (2 Girls)', 'Family Membership (3 Girls)', 'Family Membership (4 Girls)'];
-        foreach ($membershipTypes as $k => $mtype) {
-          $membershipType = civicrm_api3('MembershipType', 'getsingle', [
-            'name' => $mtype,
-            'options' => ['limit' => 1],
-          ]);
-          civicrm_api3('MembershipType', 'create', [
-            'name' => $chapterName . ' ' . $membershipType['name'],
-            'member_of_contact_id' => $membershipOwnerID ?: $membershipType['member_of_contact_id'],
-            'financial_type_id' => $membershipType['financial_type_id'],
-            "minimum_fee" => $membershipType['minimum_fee'],
-            "duration_unit" => $membershipType['duration_unit'],
-            "duration_interval" => $membershipType['duration_interval'],
-            "period_type" => 'rolling',
-            "relationship_type_id" => 4,
-            "relationship_direction" => 'a_b',
-            "visibility" => "Public",
-            "is_active" => TRUE,
-            'max_related' => $k,
-          ]);
-        }
+      createMembershipTypesForChapter($params);
+    }
+    if ($formName == 'CRM_Custom_Form_Option') {
+      $ogid = $form->getVar('_optionGroupID');
+      $optionGroupDetails = civicrm_api3('OptionGroup', 'getsingle', ['id' => $ogid]);
+      if ($optionGroupDetails['name'] == 'cagis_chapter') {
+        $params = $form->exportValues();
+        createMembershipTypesForChapter($params);
       }
     }
     if ($formName == "CRM_Contribute_Form_Contribution_Main" && $form->getVar('_id') == 1) {
@@ -694,6 +669,42 @@
       'group_id' => 2,
       'status' => 'Added',
     ]);
+  }
+
+  function createMembershipTypesForChapter($params) {
+    $membershipID = NULL;
+    if (!empty($params['label'])) {
+      $chapterName = $params['label'];
+      $membershipID = CRM_Utils_Array::value('id', civicrm_api3('MembershipType', 'get', ['name' => ['LIKE' => "%$chapterName%"]]));
+      if ($membershipID) {
+        return;
+      }
+      $membershipOwnerID = civicrm_api3('Contact', 'get', [
+        'organisation_name' => $chapterName,
+        'contact_sub_type' => 'Chapter',
+      ])['id'];
+      $membershipTypes = ['Individual Membership', 'Family Membership (2 Girls)', 'Family Membership (3 Girls)', 'Family Membership (4 Girls)'];
+      foreach ($membershipTypes as $k => $mtype) {
+        $membershipType = civicrm_api3('MembershipType', 'getsingle', [
+          'name' => $mtype,
+          'options' => ['limit' => 1],
+        ]);
+        civicrm_api3('MembershipType', 'create', [
+          'name' => $chapterName . ' ' . $membershipType['name'],
+          'member_of_contact_id' => $membershipOwnerID ?: $membershipType['member_of_contact_id'],
+          'financial_type_id' => $membershipType['financial_type_id'],
+          'minimum_fee' => $membershipType['minimum_fee'],
+          'duration_unit' => $membershipType['duration_unit'],
+          'duration_interval' => $membershipType['duration_interval'],
+          'period_type' => 'rolling',
+          'relationship_type_id' => 4,
+          'relationship_direction' => 'a_b',
+          'visibility' => 'Public',
+          'is_active' => TRUE,
+          'max_related' => $k,
+        ]);
+      }
+    }
   }
 
   // --- Functions below this ship commented out. Uncomment as required. ---
