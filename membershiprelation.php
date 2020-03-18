@@ -199,6 +199,7 @@
       CRM_Core_Region::instance('page-body')->add(array(
         'template' => 'CRM/Membershiprelation/ParentChild.tpl',
       ));
+      CRM_Core_Resources::singleton()->addScriptFile('biz.jmaconsulting.membershiprelation', 'js/membership-form.js');
     }
     if ($formName == "CRM_Contribute_Form_Contribution_Confirm" && $form->getVar('_id') == 1) {
       if (!empty($form->_lineItem)) {

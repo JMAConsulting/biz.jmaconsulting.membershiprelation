@@ -9,9 +9,9 @@
           var total = 0;
           var priceAmount = parseInt($('#priceset [price]:checked').data('amount'));
           $('input[id*="custom_1_"]:checked').each(function(e) {
-            var chapter = $(this).attr('name').replace('custom_1[', '').replace(']', '').replace(' ', ', ');
+            var chapter = $(this).attr('name').replace('custom_1[', '').replace(']', '');
             $('.chapter_memberships-content .crm-price-amount-label').each(function(e) {
-              if ($(this).text().match(chapter) !== null) {
+              if ($(this).text().replace(',', '').match(chapter) !== null) {
                 if (parseInt($(this).parent().parent().children('input').data('amount')) == priceAmount) {
                   $(this).parent().parent().children('input').prop('checked', true);
                   total += 1;
