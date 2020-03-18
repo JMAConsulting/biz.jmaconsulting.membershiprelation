@@ -199,8 +199,19 @@
       CRM_Core_Region::instance('page-body')->add(array(
         'template' => 'CRM/Membershiprelation/ParentChild.tpl',
       ));
+      CRM_Core_Resources::singleton()->addScriptFile('biz.jmaconsulting.membershiprelation', 'js/membership-form.js');
     }
     if ($formName == "CRM_Contribute_Form_Contribution_Confirm" && $form->getVar('_id') == 1) {
+      if (!empty($form->_lineItem)) {
+        $membershipPriceFieldIDs = [];
+        $priceSetId = key($form->_lineItem);
+        foreach ((array) $form->_lineItem[$priceSetId] as $lineItem) {
+          $membershipPriceFieldIDs['id'] = $priceSetId;
+          $membershipPriceFieldIDs[] = $lineItem['price_field_value_id'];
+        }
+        $form->set('memberPriceFieldIDS', $membershipPriceFieldIDs);
+      }
+
       $form->addButtons([
         [
           'type' => 'next',
@@ -214,6 +225,74 @@
         ],
       ]);
     }
+
+    if ($formName == 'CRM_Price_Form_Field') {
+      // form fields of Custom Option rows
+      $_showHide = new CRM_Core_ShowHideBlocks('', '');
+      $attributes = CRM_Core_DAO::getAttribute('CRM_Price_DAO_PriceFieldValue');
+      $financialType = CRM_Financial_BAO_FinancialType::getIncomeFinancialType();
+      foreach ($financialType as $finTypeId => $type) {
+        if (CRM_Financial_BAO_FinancialType::isACLFinancialTypeStatus()
+          && !CRM_Core_Permission::check('add contributions of type ' . $type)
+        ) {
+          unset($financialType[$finTypeId]);
+        }
+      }
+      if (count($financialType)) {
+        $form->assign('financialType', $financialType);
+      }
+      for ($i = 1; $i <= 100; $i++) {
+
+        //the show hide blocks
+        $showBlocks = 'optionField_' . $i;
+        if ($i > 2) {
+          $_showHide->addHide($showBlocks);
+          if ($i == 100) {
+            $_showHide->addHide('additionalOption');
+          }
+        }
+        else {
+          $_showHide->addShow($showBlocks);
+        }
+        // label
+        $attributes['label']['size'] = 25;
+        $form->add('text', 'option_label[' . $i . ']', ts('Label'), $attributes['label']);
+
+        // amount
+        $form->add('text', 'option_amount[' . $i . ']', ts('Amount'), $attributes['amount']);
+        $form->addRule('option_amount[' . $i . ']', ts('Please enter a valid amount for this field.'), 'money');
+
+        //Financial Type
+        $form->add(
+          'select',
+          'option_financial_type_id[' . $i . ']',
+          ts('Financial Type'),
+          ['' => ts('- select -')] + $financialType
+        );
+        $membershipTypes = CRM_Member_PseudoConstant::membershipType();
+        $js = ['onchange' => "calculateRowValues( $i );"];
+
+        $form->add('select', 'membership_type_id[' . $i . ']', ts('Membership Type'),
+          ['' => ' '] + $membershipTypes, FALSE, $js
+        );
+        $form->add('text', 'membership_num_terms[' . $i . ']', ts('Number of Terms'), CRM_Utils_Array::value('membership_num_terms', $attributes));
+
+        // weight
+        $form->add('number', 'option_weight[' . $i . ']', ts('Order'), $attributes['weight']);
+
+        // is active ?
+        $form->add('checkbox', 'option_status[' . $i . ']', ts('Active?'));
+
+        $form->add('select', 'option_visibility_id[' . $i . ']', ts('Visibility'), $visibilityType);
+        $defaultOption[$i] = $form->createElement('radio', NULL, NULL, NULL, $i);
+
+        //for checkbox handling of default option
+        $form->add('checkbox', "default_checkbox_option[$i]", NULL);
+      }
+      //default option selection
+      $form->addGroup($defaultOption, 'default_option');
+      $_showHide->addToTemplate();
+    }
   }
 
   /**
@@ -223,6 +302,11 @@
    * @param CRM_Core_Form $form
    */
   function membershiprelation_civicrm_validateForm($formName, &$fields, &$files, &$form, &$errors) {
+    if ($formName == "CRM_Contribute_Form_Contribution_Main" || $formName == 'CRM_Price_Form_Field') {
+      if (strstr(CRM_Utils_Array::value('_qf_default', $form->_errors, ''), 'You have selected multiple memberships')) {
+        unset($form->_errors['_qf_default']);
+      }
+    }
     if ($formName == "CRM_Contribute_Form_Contribution_Main" && $form->getVar('_id') == 1) {
       switch ($fields[CHILDPRICEM]) {
         case TWOGIRLS:
@@ -303,6 +387,33 @@
    * @throws CiviCRM_API3_Exception
    */
   function membershiprelation_civicrm_postProcess($formName, &$form) {
+    if ($formName == 'CRM_Admin_Form_Options' && $form->getVar('_gName') == 'cagis_chapter') {
+      $params = $form->exportValues();
+      createMembershipTypesForChapter($params);
+    }
+    if ($formName == 'CRM_Custom_Form_Option') {
+      $ogid = $form->getVar('_optionGroupID');
+      $optionGroupDetails = civicrm_api3('OptionGroup', 'getsingle', ['id' => $ogid]);
+      if ($optionGroupDetails['name'] == 'cagis_chapter') {
+        $params = $form->exportValues();
+        createMembershipTypesForChapter($params);
+      }
+    }
+    if ($formName == "CRM_Contribute_Form_Contribution_Main" && $form->getVar('_id') == 1) {
+      $lineItem = $form->get('lineItem');
+      // remove the default price field selection from submitted variables
+      $priceSetId = key($lineItem);
+      foreach ($lineItem[$priceSetId] as $key => $priceFieldValue) {
+        if (in_array($key, [ONEGIRL, TWOGIRLS, THREEGIRLS, FOURGIRLS])) {
+          unset($lineItem[$priceSetId][$key]);
+          $form->_params['amount'] -= $priceFieldValue['line_total'];
+        }
+      }
+      $form->set('amount', $form->_params['amount']);
+      unset($form->_params[CHILDPRICEM]);
+      $form->set('lineItem', $lineItem);
+      $form->_lineItem = $lineItem;
+    }
     if ($formName == "CRM_Contribute_Form_Contribution_Confirm" && $form->getVar('_id') == 1) {
       $child1 = $form->_contactID;
       $child1Details = [];
@@ -559,6 +670,42 @@
       'group_id' => 2,
       'status' => 'Added',
     ]);
+  }
+
+  function createMembershipTypesForChapter($params) {
+    $membershipID = NULL;
+    if (!empty($params['label'])) {
+      $chapterName = $params['label'];
+      $membershipID = CRM_Utils_Array::value('id', civicrm_api3('MembershipType', 'get', ['name' => ['LIKE' => "%$chapterName%"]]));
+      if ($membershipID) {
+        return;
+      }
+      $membershipOwnerID = civicrm_api3('Contact', 'get', [
+        'organisation_name' => $chapterName,
+        'contact_sub_type' => 'Chapter',
+      ])['id'];
+      $membershipTypes = ['Individual Membership', 'Family Membership (2 Girls)', 'Family Membership (3 Girls)', 'Family Membership (4 Girls)'];
+      foreach ($membershipTypes as $k => $mtype) {
+        $membershipType = civicrm_api3('MembershipType', 'getsingle', [
+          'name' => $mtype,
+          'options' => ['limit' => 1],
+        ]);
+        civicrm_api3('MembershipType', 'create', [
+          'name' => $chapterName . ' ' . $membershipType['name'],
+          'member_of_contact_id' => $membershipOwnerID ?: $membershipType['member_of_contact_id'],
+          'financial_type_id' => $membershipType['financial_type_id'],
+          'minimum_fee' => $membershipType['minimum_fee'],
+          'duration_unit' => $membershipType['duration_unit'],
+          'duration_interval' => $membershipType['duration_interval'],
+          'period_type' => 'rolling',
+          'relationship_type_id' => 4,
+          'relationship_direction' => 'a_b',
+          'visibility' => 'Public',
+          'is_active' => TRUE,
+          'max_related' => $k,
+        ]);
+      }
+    }
   }
 
   // --- Functions below this ship commented out. Uncomment as required. ---
