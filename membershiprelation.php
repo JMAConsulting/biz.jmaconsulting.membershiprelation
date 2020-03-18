@@ -283,6 +283,7 @@
         // is active ?
         $form->add('checkbox', 'option_status[' . $i . ']', ts('Active?'));
 
+        $visibilityType = CRM_Core_PseudoConstant::visibility();
         $form->add('select', 'option_visibility_id[' . $i . ']', ts('Visibility'), $visibilityType);
         $defaultOption[$i] = $form->createElement('radio', NULL, NULL, NULL, $i);
 

@@ -37,7 +37,7 @@
     </tr>
 
   {* file need to be override to increase this max count *}
-  {section name=rowLoop start=1 loop=100}
+  {section name=rowLoop start=1 loop=101}
   {assign var=index value=$smarty.section.rowLoop.index}
   <tr id="optionField_{$index}" class="form-item {cycle values="odd-row,even-row"}">
         <td>
