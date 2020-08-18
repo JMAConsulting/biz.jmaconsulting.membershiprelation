@@ -2,7 +2,10 @@
 <script type="text/javascript">
     CRM.$(function($) {
         $('#membership').parent().prepend($('#editrow-custom_1'));
-        $('#editrow-custom_1').append($('#helprow-custom_1'));
+        $('.price_set-section').prepend($('#editrow-custom_1'));
+        $('#editrow-custom_1').append($('.helprow-custom_1-section'));
+        $('.price_set-section').prepend('<legend><h3>Membership Type</h3></legend>');
+        $('.membership_type-section').append($('#editrow-custom_110'));
         $('div.chapter_memberships-section').addClass('hiddenElement');
 
         function calculatePriceTotalOnChapterSelect() {
@@ -24,7 +27,21 @@
           });
           if (total > 0) {
             total = total * priceAmount;
+          }
+          else {
+           total = parseInt($('input[name="price_11"]:checked').data('amount')) || 0;
+          }
+          total += parseInt($('.virtual_membership-content input:checked').data('amount') || 0);
+          if (total > 0) {
+            var selected = false;
+            if (parseInt($('.virtual_membership-content input:checked').data('amount')) > 0 && parseInt($('input[name="price_11"]:checked').data('amount')) > 0) {
+              total -= 15;
+              selected = true;
+            }
             display(total);
+            if (selected) {
+              $('#pricevalue').append(' ($15 discount applied)');
+            }
           }
         }
         // calculate price total on page load
@@ -32,6 +49,10 @@
 
         // calculate price total on chapter selection
         $('input[id*="custom_1_"]').on('click', function(e) {
+          calculatePriceTotalOnChapterSelect();
+        });
+
+        $('input[name="custom_110"]').on('click', function(e) {
           calculatePriceTotalOnChapterSelect();
         });
 
@@ -71,6 +92,16 @@
 
         // Children
         var selectedchildren = $('input[name='+childprice+']:checked').val();
+        var selectedVM =  $('input[name="price_28"]:checked').val();
+        if (selectedVM == 181 && (selectedchildren == onegirl || selectedchildren == 0)) {
+          selectedchildren = twogirls;
+        }
+        if (selectedVM == 182 && (selectedchildren == onegirl || selectedchildren == twogirls || selectedchildren == 0)) {
+           selectedchildren = threegirls;
+        }
+        if (selectedVM == 183 && (selectedchildren == onegirl || selectedchildren == twogirls || selectedchildren == threegirls || selectedchildren == 0)) {
+           selectedchildren = fourgirls;
+        }
 
         if (selectedchildren) {
             if (selectedchildren == onegirl) {
@@ -92,8 +123,22 @@
             }
         }
 
-        $('input[name='+childprice+']').change(function() {
-            var noofchildren = $(this).val();
+        $('input[name='+childprice+'], input[name="price_28"]').change(function() {
+            var selectedchildren = $('input[name='+childprice+']:checked').val();
+            var selectedVM =  $('input[name="price_28"]:checked').val();
+            if (selectedVM == 181 && (selectedchildren == onegirl || selectedchildren == 0)) {
+               selectedchildren = twogirls;
+            }
+            if (selectedVM == 182 && (selectedchildren == onegirl || selectedchildren == twogirls || selectedchildren == 0)) {
+               selectedchildren = threegirls;
+            }
+            if (selectedVM == 183 && (selectedchildren == onegirl || selectedchildren == twogirls || selectedchildren == threegirls || selectedchildren == 0)) {
+               selectedchildren = fourgirls;
+            }
+            if (selectedVM == 0 && selectedchildren == 0) {
+              selectedchildren = onegirl;
+            }
+            var noofchildren = selectedchildren;
 
             if (noofchildren == onegirl) {
                 $('#'+child2fn).val('');
