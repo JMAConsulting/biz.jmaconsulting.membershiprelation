@@ -318,6 +318,9 @@
       if (!empty($fields[CHILDPRICEM]) && empty($chapterSelected)) {
         $errors['custom_1'] = E::ts('You must select a chapter');
       }
+      if ($chapterSelected && empty($fields[CHILDPRICEM])) {
+        $errors[CHILDPRICEM] = E::ts('If you want to select a chapter you need to also select a chapter membership.');
+      }
       switch ($fields[CHILDPRICEM]) {
         case TWOGIRLS:
           if (empty($fields[CHILD2FNM]) && empty($fields[CHILD2LNM])) {
