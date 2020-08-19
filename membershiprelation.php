@@ -321,6 +321,17 @@
       if ($chapterSelected && empty($fields[CHILDPRICEM])) {
         $errors[CHILDPRICEM] = E::ts('If you want to select a chapter you need to also select a chapter membership.');
       }
+      if (!empty($fields[VMCHILDPRICEM]) && !empty($fields[CHILDPRICEM])) {
+        if ($fields[VMCHILDPRICEM] == VMTWOGIRLS &&  $fields[CHILDPRICEM] == ONEGIRL) {
+          $fields[CHILDPRICEM] = TWOGIRLS;
+        }
+        elseif ($fields[VMCHILDPRICEM] == VMTHREEGIRLS && in_array($fields[CHILDPRICEM], [ONEGIRL, TWOGIRLS])) {
+          $fields[CHILDPRICEM] = THREEGIRLS;
+        }
+        elseif ($fields[VMCHILDPRICEM] == VMFOURGIRLS && in_array($fields[CHILDPRICEM], [ONEGIRL, TWOGIRLS, THREEGIRLS])) {
+          $fields[CHILDPRICEM] = FOURGIRLS;
+        }
+      }
       switch ($fields[CHILDPRICEM]) {
         case TWOGIRLS:
           if (empty($fields[CHILD2FNM]) && empty($fields[CHILD2LNM])) {

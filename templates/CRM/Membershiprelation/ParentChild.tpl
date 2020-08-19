@@ -2,11 +2,10 @@
 <script type="text/javascript">
     CRM.$(function($) {
         $('#membership').parent().prepend($('#editrow-custom_1'));
-        $('.price_set-section').prepend($('#editrow-custom_1'));
         $('.price_set-section').prepend('<legend><h3>Membership Type</h3></legend>');
         $('.membership_type-section').append($('#editrow-custom_110'));
         $('div.chapter_memberships-section').addClass('hiddenElement');
-        $('#editrow-custom_1').insertAfter($('.virtual_membership-section'));
+        $('#editrow-custom_1').insertBefore($('.custom_pre_profile-group'));
         $('#helprow-custom_1').insertAfter($('#editrow-custom_1'));
 
         function calculatePriceTotalOnChapterSelect() {
