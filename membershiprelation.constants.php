@@ -30,9 +30,15 @@ define('CHILD4G', 'custom_40');
 
 // Price Sets
 define('CHILDPRICEM', 'price_11');
+define('VMCHILDPRICEM', 'price_28');
 
 // Price Fields
 define('ONEGIRL', 24);
 define('TWOGIRLS', 25);
 define('THREEGIRLS', 26);
 define('FOURGIRLS', 27);
+
+define('VMONEGIRL', 180);
+define('VMTWOGIRLS', 181);
+define('VMTHREEGIRLS', 182);
+define('VMFOURGIRLS', 183);

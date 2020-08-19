@@ -309,6 +309,29 @@
       }
     }
     if ($formName == "CRM_Contribute_Form_Contribution_Main" && $form->getVar('_id') == 1) {
+      $chapterSelected = FALSE;
+      foreach ($fields['custom_1'] as $chapter => $value) {
+        if (!empty($value)) {
+          $chapterSelected = TRUE;
+        }
+      }
+      if (!empty($fields[CHILDPRICEM]) && empty($chapterSelected)) {
+        $errors['custom_1'] = E::ts('You must select a chapter');
+      }
+      if ($chapterSelected && empty($fields[CHILDPRICEM])) {
+        $errors[CHILDPRICEM] = E::ts('If you want to select a chapter you need to also select a chapter membership.');
+      }
+      if (!empty($fields[VMCHILDPRICEM]) && !empty($fields[CHILDPRICEM])) {
+        if ($fields[VMCHILDPRICEM] == VMTWOGIRLS &&  $fields[CHILDPRICEM] == ONEGIRL) {
+          $fields[CHILDPRICEM] = TWOGIRLS;
+        }
+        elseif ($fields[VMCHILDPRICEM] == VMTHREEGIRLS && in_array($fields[CHILDPRICEM], [ONEGIRL, TWOGIRLS])) {
+          $fields[CHILDPRICEM] = THREEGIRLS;
+        }
+        elseif ($fields[VMCHILDPRICEM] == VMFOURGIRLS && in_array($fields[CHILDPRICEM], [ONEGIRL, TWOGIRLS, THREEGIRLS])) {
+          $fields[CHILDPRICEM] = FOURGIRLS;
+        }
+      }
       switch ($fields[CHILDPRICEM]) {
         case TWOGIRLS:
           if (empty($fields[CHILD2FNM]) && empty($fields[CHILD2LNM])) {
@@ -404,7 +427,17 @@
       $lineItem = $form->get('lineItem');
       // remove the default price field selection from submitted variables
       $priceSetId = key($lineItem);
+      $chapterMembership = FALSE;
       foreach ($lineItem[$priceSetId] as $key => $priceFieldValue) {
+        if ($priceFieldValue['field_title'] == 'Chapter Memberships') {
+          $chapterMembership = TRUE;
+        }
+        if ($chapterMembership && in_array($priceFieldValue['price_field_value_id'], [VMONEGIRL, VMTWOGIRLS, VMTHREEGIRLS, VMFOURGIRLS])) {
+          $priceFieldValue['unit_price'] = $priceFieldValue['line_total'] = $priceFieldValue['unit_price'] - 15;
+          $priceFieldValue['label'] .= ' ( Includes automatic primary member discount of: $ 15.00 )';
+          $lineItem[$priceSetId][$key] = $priceFieldValue;
+          $form->_params['amount'] -= 15;
+        }
         if (in_array($key, [ONEGIRL, TWOGIRLS, THREEGIRLS, FOURGIRLS])) {
           unset($lineItem[$priceSetId][$key]);
           $form->_params['amount'] -= $priceFieldValue['line_total'];
@@ -515,7 +548,12 @@
         createRelationshipMember($child1, $parent1, $childRel);
 
         // create wp user
-        createWpUser($parent1, TRUE);
+        $ufID = createWpUser($parent1, TRUE);
+        $isVirtualMember = CRM_Core_DAO::singleValueQuery('SELECT COUNT(id) FROM civicrm_membership WHERE membership_type_id = 65 AND contact_id = ' . $child1) > 0 ? TRUE : FALSE;
+        if ($ufID && $isVirtualMember) {
+          $u = new WP_User($ufID);
+          $u->set_role('virtual_member');
+        }
 
         foreach ($contact as $person => $con) {
           if (in_array($person, ['child2', 'child3', 'child4']) && !empty($contact[$person][0]) && ($contact[$person][0] != $parent1)) {
@@ -619,6 +657,8 @@
       }
       catch (CRM_Core_Exception $e) {}
     }
+
+    return $ufID;
   }
 
   function sendResetLink($user) {
