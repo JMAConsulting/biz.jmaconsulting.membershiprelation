@@ -52,6 +52,37 @@
     }
   }
 
+  function membershiprelation_civicrm_pre($op, $objectName, $objectId, &$params) {
+    if ($op == "edit" && $objectName == "Membership") {
+      if (!empty($params['membership_type_id'])) {
+        if (in_array($params['membership_type_id'], [VMTONEGIRL, VMTTWOGIRLS, VMTTHREEGIRLS, VMTFOURGIRLS])) {
+          $membershipObj = new CRM_Member_DAO_Membership();
+          $membershipObj->id = $objectId;
+          $membershipObj->find();
+          $oldType = NULL;
+          while ($membershipObj->fetch()) {
+            $oldType = $membershipObj->membership_type_id;
+          }
+          if (!in_array($oldType, [VMTONEGIRL, VMTTWOGIRLS, VMTTHREEGIRLS, VMTFOURGIRLS])) {
+            unset($params['id']);
+          }
+        }
+        else {
+          $membershipObj = new CRM_Member_DAO_Membership();
+          $membershipObj->id = $objectId;
+          $membershipObj->find();
+          $oldType = NULL;
+          while ($membershipObj->fetch()) {
+            $oldType = $membershipObj->membership_type_id;
+          }
+          if (in_array($oldType, [VMTONEGIRL, VMTTWOGIRLS, VMTTHREEGIRLS, VMTFOURGIRLS])) {
+            unset($params['id']);
+          }
+        }
+      }
+    }
+  }
+
   /**
    * Implements hook_civicrm_xmlMenu().
    *

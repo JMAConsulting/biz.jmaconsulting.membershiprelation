@@ -42,3 +42,8 @@ define('VMONEGIRL', 180);
 define('VMTWOGIRLS', 181);
 define('VMTHREEGIRLS', 182);
 define('VMFOURGIRLS', 183);
+
+define('VMTONEGIRL', 65);
+define('VMTTWOGIRLS', 66);
+define('VMTTHREEGIRLS', 67);
+define('VMTFOURGIRLS', 68);
