@@ -59,24 +59,32 @@
           $membershipObj = new CRM_Member_DAO_Membership();
           $membershipObj->id = $objectId;
           $membershipObj->find();
-          $oldType = NULL;
+          $oldType = $contactID = $source = NULL;
           while ($membershipObj->fetch()) {
             $oldType = $membershipObj->membership_type_id;
+            $contactID = $membershipObj->contact_id;
+            $source = $membershipObj->source;
           }
           if (!in_array($oldType, [VMTONEGIRL, VMTTWOGIRLS, VMTTHREEGIRLS, VMTFOURGIRLS])) {
             unset($params['id']);
+            $params['contact_id'] = $contactID;
+            $params['source'] = $source;
           }
         }
         else {
           $membershipObj = new CRM_Member_DAO_Membership();
           $membershipObj->id = $objectId;
           $membershipObj->find();
-          $oldType = NULL;
+          $oldType = $contactID = $source = NULL;
           while ($membershipObj->fetch()) {
             $oldType = $membershipObj->membership_type_id;
+            $contactID = $membershipObj->contact_id;
+            $source = $membershipObj->source;
           }
           if (in_array($oldType, [VMTONEGIRL, VMTTWOGIRLS, VMTTHREEGIRLS, VMTFOURGIRLS])) {
             unset($params['id']);
+            $params['contact_id'] = $contactID;
+            $params['source'] = $source;
           }
         }
       }
